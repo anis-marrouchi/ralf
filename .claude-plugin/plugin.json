@@ -1,0 +1,13 @@
+{
+  "name": "ralf",
+  "version": "1.0.0",
+  "description": "Recursive Language Model Agent for PRD-driven development with iterative loops",
+  "author": {
+    "name": "Anis Marrouchi"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/anis-marrouchi/ralf",
+  "commands": ["./commands/cancel-ralf.md", "./commands/prd-to-json.md", "./commands/prd.md", "./commands/ralf-status.md", "./commands/ralf.md"],
+  "agents": ["./agents/code-reviewer.md", "./agents/story-executor.md", "./agents/rlm-processor.md"],
+  "hooks": "./hooks/hooks.json"
+}

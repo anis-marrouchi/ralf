@@ -81,3 +81,53 @@ Return a JSON report:
 - No new linting errors
 - Follow existing code style
 - Write clear, maintainable code
+
+## When to Use RLM Processor
+
+Before implementing a story, assess if RLM (Recursive Language Model) processing would help. RLM lets you analyze large codebases programmatically rather than loading everything into context.
+
+### Trigger Conditions
+
+Spawn the `rlm-processor` agent when ANY of these apply:
+
+1. **Context Size Threshold**: Understanding the story requires reading >50K tokens of code
+2. **Multi-File Analysis**: Story touches >5 interconnected files
+3. **Pattern Discovery**: Need to find "where X happens" across an unfamiliar codebase
+4. **Cross-Cutting Concerns**: Story involves auth, logging, error handling, or similar patterns that span multiple modules
+
+### How to Delegate
+
+When RLM is needed, spawn the rlm-processor agent with:
+
+```
+Task: rlm-processor
+Files: src/**/*.ts (or relevant glob pattern)
+Query: "What specific information do you need?"
+```
+
+**Example Queries:**
+- "Find all authentication middleware and their patterns"
+- "Identify all API endpoints and their request/response types"
+- "Locate error handling patterns across the codebase"
+- "Map the data flow from user input to database"
+
+### Using RLM Results
+
+The rlm-processor returns:
+- `analysis`: Condensed findings about the query
+- `relevant_files`: Files you should focus on
+- `code_patterns`: Patterns discovered in the codebase
+- `implementation_hints`: Suggestions for implementing your story
+
+Use these results to:
+1. Focus your implementation on the right files
+2. Follow existing patterns in the codebase
+3. Avoid reading 200K tokens of code directly
+
+### When NOT to Use RLM
+
+Skip RLM when:
+- Story is self-contained in 1-3 files
+- You already know exactly where to make changes
+- The codebase context is under 30K tokens
+- It's a simple bug fix with clear location
