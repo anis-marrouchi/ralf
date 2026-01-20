@@ -1,0 +1,33 @@
+{
+  "project": "PROJECT_NAME",
+  "branchName": "ralf/FEATURE_NAME",
+  "description": "FEATURE_DESCRIPTION",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "STORY_TITLE",
+      "description": "As a USER, I want FEATURE so that BENEFIT",
+      "acceptanceCriteria": [
+        "CRITERION_1",
+        "CRITERION_2",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "STORY_TITLE",
+      "description": "As a USER, I want FEATURE so that BENEFIT",
+      "acceptanceCriteria": [
+        "CRITERION_1",
+        "CRITERION_2",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "ralf",
+  "version": "1.0.0",
+  "description": "Ralf - Recursive Language Model Agent for PRD-driven development with iterative loops for Claude Code",
+  "author": "Anis Marrouchi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anis-marrouchi/ralf"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "autonomous",
+    "agent",
+    "prd",
+    "iterative",
+    "development",
+    "rlm",
+    "recursive-language-model"
+  ],
+  "claude-plugin": {
+    "type": "local",
+    "installPath": "~/.claude/plugins/local/ralf"
+  },
+  "files": [
+    ".claude-plugin",
+    "commands",
+    "skills",
+    "agents",
+    "hooks",
+    "scripts",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "echo 'Ralf plugin installed. Restart Claude Code to activate.'"
+  }
+}
