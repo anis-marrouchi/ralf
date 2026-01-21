@@ -22,31 +22,5 @@
     "./skills/prd-to-json",
     "./skills/rlm-processing",
     "./skills/update-issue"
-  ],
-  "agents": [
-    {
-      "path": "./agents/story-executor.md",
-      "name": "story-executor",
-      "displayName": "Story Executor",
-      "color": "#22C55E",
-      "icon": "code",
-      "description": "Implements a single user story"
-    },
-    {
-      "path": "./agents/rlm-processor.md",
-      "name": "rlm-processor",
-      "displayName": "RLM Processor",
-      "color": "#8B5CF6",
-      "icon": "cpu",
-      "description": "Analyzes large codebases programmatically"
-    },
-    {
-      "path": "./agents/evaluator.md",
-      "name": "evaluator",
-      "displayName": "Loop Evaluator",
-      "color": "#EC4899",
-      "icon": "chart",
-      "description": "Evaluates performance and optimizes execution order"
-    }
   ]
 }
