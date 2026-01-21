@@ -8,6 +8,5 @@
   "license": "MIT",
   "repository": "https://github.com/anis-marrouchi/ralf",
   "commands": ["./commands/cancel-ralf.md", "./commands/prd-to-json.md", "./commands/prd.md", "./commands/ralf-status.md", "./commands/ralf.md"],
-  "agents": ["./agents/code-reviewer.md", "./agents/story-executor.md", "./agents/rlm-processor.md"],
-  "hooks": "./hooks/hooks.json"
+  "agents": ["./agents/code-reviewer.md", "./agents/story-executor.md", "./agents/rlm-processor.md"]
 }
