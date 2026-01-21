@@ -1,9 +1,21 @@
 ---
 description: "Generate a Product Requirements Document (PRD) for a new feature"
 argument-hint: "[feature description]"
+allowed-tools: ["Skill(ralf:prd-generation)"]
 ---
 
 # PRD Generator
+
+## Pre-execution
+
+Before starting, invoke the skill for expert guidance:
+
+Use the Skill tool:
+- skill: "ralf:prd-generation"
+
+This provides quality standards, story sizing guidance, and the question framework to follow.
+
+---
 
 Create detailed Product Requirements Documents that are clear, actionable, and suitable for implementation.
 

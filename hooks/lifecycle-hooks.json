@@ -1,0 +1,78 @@
+{
+  "$schema": "../schemas/lifecycle-hooks.schema.json",
+  "lifecycle": {
+    "on_task_start": {
+      "enabled": true,
+      "description": "Fired before story-executor spawns",
+      "handlers": [
+        {
+          "type": "command",
+          "command": "${PROJECT_ROOT}/.ralf/hooks/on-task-start.sh",
+          "optional": true,
+          "timeout": 30000
+        }
+      ],
+      "contextSchema": {
+        "storyId": "string",
+        "title": "string",
+        "branch": "string",
+        "iteration": "number",
+        "priority": "number",
+        "acceptanceCriteria": "array"
+      }
+    },
+    "on_task_completed": {
+      "enabled": true,
+      "description": "Fired after story passes all checks",
+      "handlers": [
+        {
+          "type": "command",
+          "command": "${PROJECT_ROOT}/.ralf/hooks/on-task-completed.sh",
+          "optional": true,
+          "timeout": 30000
+        }
+      ],
+      "contextSchema": {
+        "storyId": "string",
+        "title": "string",
+        "commitHash": "string",
+        "filesChanged": "array",
+        "metrics": {
+          "startedAt": "string",
+          "completedAt": "string",
+          "durationMs": "number",
+          "tokensConsumed": "number"
+        }
+      }
+    },
+    "on_task_blocked": {
+      "enabled": true,
+      "description": "Fired after max retries exceeded",
+      "handlers": [
+        {
+          "type": "command",
+          "command": "${PROJECT_ROOT}/.ralf/hooks/on-task-blocked.sh",
+          "optional": true,
+          "timeout": 30000
+        }
+      ],
+      "contextSchema": {
+        "storyId": "string",
+        "title": "string",
+        "blockedReason": "string",
+        "retryCount": "number",
+        "errors": "array",
+        "lastAttempt": {
+          "startedAt": "string",
+          "completedAt": "string",
+          "error": "string"
+        }
+      }
+    }
+  },
+  "defaults": {
+    "optional": true,
+    "timeout": 30000,
+    "continueOnError": true
+  }
+}

@@ -1,9 +1,21 @@
 ---
 description: "Convert a PRD markdown file to prd.json for Ralf execution"
 argument-hint: "[prd file path]"
+allowed-tools: ["Skill(ralf:prd-to-json)"]
 ---
 
 # PRD to JSON Converter
+
+## Pre-execution
+
+Before starting, invoke the skill for expert guidance:
+
+Use the Skill tool:
+- skill: "ralf:prd-to-json"
+
+This provides the JSON schema, dependency ordering rules, and validation checklist.
+
+---
 
 Converts existing PRDs to the prd.json format that Ralf uses for autonomous execution.
 
@@ -18,6 +30,15 @@ Take a PRD (markdown file path from arguments, or find recent PRD in `tasks/`) a
   "project": "[Project Name]",
   "branchName": "ralf/[feature-name-kebab-case]",
   "description": "[Feature description from PRD title/intro]",
+  "settings": {
+    "tddRequired": true,
+    "autoPush": true,
+    "executionMode": "sequential",
+    "evaluatorEnabled": true,
+    "allowReorder": true,
+    "evaluateEveryNIterations": 3,
+    "maxRetries": 3
+  },
   "userStories": [
     {
       "id": "US-001",
@@ -30,7 +51,16 @@ Take a PRD (markdown file path from arguments, or find recent PRD in `tasks/`) a
       ],
       "priority": 1,
       "passes": false,
-      "notes": ""
+      "notes": "",
+      "targetFiles": ["src/path/to/file.ts"],
+      "specReference": "FR-1, FR-2",
+      "metrics": {
+        "startedAt": null,
+        "completedAt": null,
+        "durationMs": null,
+        "tokensConsumed": null,
+        "attempts": []
+      }
     }
   ]
 }
@@ -89,6 +119,10 @@ Stories execute in priority order. Earlier stories must not depend on later ones
 4. **All stories**: `passes: false` and empty `notes`
 5. **branchName**: Derive from feature name, kebab-case, prefixed with `ralf/`
 6. **Always add**: "Typecheck passes" to every story's acceptance criteria
+7. **targetFiles**: Identify likely files to be created/modified (scan codebase)
+8. **specReference**: Link to functional requirements (e.g., "FR-1, FR-2")
+9. **metrics**: Initialize with null values and empty attempts array
+10. **settings**: Include project-level settings for execution behavior
 
 ## Archiving Previous Runs
 
@@ -118,3 +152,7 @@ After saving prd.json, inform the user:
 - [ ] Every story has "Typecheck passes" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story
+- [ ] **targetFiles** populated for each story (scan codebase)
+- [ ] **specReference** links stories to functional requirements
+- [ ] **metrics** object initialized with null values
+- [ ] **settings** section includes project preferences

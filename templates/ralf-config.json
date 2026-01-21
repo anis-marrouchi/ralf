@@ -1,0 +1,43 @@
+{
+  "$schema": "../schemas/ralf-config.schema.json",
+  "settings": {
+    "tddRequired": true,
+    "autoPush": true,
+    "executionMode": "sequential",
+    "evaluatorEnabled": true,
+    "allowReorder": true,
+    "evaluateEveryNIterations": 3,
+    "maxRetries": 3,
+    "hooks": {
+      "on_task_start": ".ralf/hooks/on-task-start.sh",
+      "on_task_completed": ".ralf/hooks/on-task-completed.sh",
+      "on_task_blocked": ".ralf/hooks/on-task-blocked.sh"
+    },
+    "issueTracker": {
+      "platform": "github",
+      "autoUpdate": true,
+      "labelOnStart": "in-progress",
+      "labelOnComplete": null,
+      "labelOnBlocked": "blocked",
+      "closeOnComplete": false
+    },
+    "qualityChecks": {
+      "typecheck": {
+        "enabled": true,
+        "command": "npm run typecheck"
+      },
+      "lint": {
+        "enabled": true,
+        "command": "npm run lint"
+      },
+      "test": {
+        "enabled": true,
+        "command": "npm test"
+      }
+    },
+    "context": {
+      "maxTokensWarning": 50000,
+      "triggerRlmAt": 50000
+    }
+  }
+}

@@ -1,12 +1,51 @@
 {
   "name": "ralf",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Recursive Language Model Agent for PRD-driven development with iterative loops",
   "author": {
     "name": "Anis Marrouchi"
   },
   "license": "MIT",
   "repository": "https://github.com/anis-marrouchi/ralf",
-  "commands": ["./commands/cancel-ralf.md", "./commands/prd-to-json.md", "./commands/prd.md", "./commands/ralf-status.md", "./commands/ralf.md"],
-  "agents": ["./agents/code-reviewer.md", "./agents/story-executor.md", "./agents/rlm-processor.md"]
+  "commands": [
+    "./commands/cancel-ralf.md",
+    "./commands/prd-to-json.md",
+    "./commands/prd.md",
+    "./commands/ralf-status.md",
+    "./commands/ralf.md",
+    "./commands/generate-pin.md"
+  ],
+  "skills": [
+    "./skills/prd-generation",
+    "./skills/story-execution",
+    "./skills/prd-to-json",
+    "./skills/rlm-processing",
+    "./skills/update-issue"
+  ],
+  "agents": [
+    {
+      "path": "./agents/story-executor.md",
+      "name": "story-executor",
+      "displayName": "Story Executor",
+      "color": "#22C55E",
+      "icon": "code",
+      "description": "Implements a single user story"
+    },
+    {
+      "path": "./agents/rlm-processor.md",
+      "name": "rlm-processor",
+      "displayName": "RLM Processor",
+      "color": "#8B5CF6",
+      "icon": "cpu",
+      "description": "Analyzes large codebases programmatically"
+    },
+    {
+      "path": "./agents/evaluator.md",
+      "name": "evaluator",
+      "displayName": "Loop Evaluator",
+      "color": "#EC4899",
+      "icon": "chart",
+      "description": "Evaluates performance and optimizes execution order"
+    }
+  ]
 }

@@ -20,6 +20,15 @@ Expert guidance for converting PRDs to Ralf's executable JSON format.
   "project": "string",
   "branchName": "ralf/feature-name",
   "description": "string",
+  "settings": {
+    "tddRequired": true,
+    "autoPush": true,
+    "executionMode": "sequential",
+    "evaluatorEnabled": true,
+    "allowReorder": true,
+    "evaluateEveryNIterations": 3,
+    "maxRetries": 3
+  },
   "userStories": [
     {
       "id": "US-001",
@@ -28,7 +37,16 @@ Expert guidance for converting PRDs to Ralf's executable JSON format.
       "acceptanceCriteria": ["string"],
       "priority": 1,
       "passes": false,
-      "notes": ""
+      "notes": "",
+      "targetFiles": ["src/path/to/file.ts"],
+      "specReference": "FR-1, FR-2",
+      "metrics": {
+        "startedAt": null,
+        "completedAt": null,
+        "durationMs": null,
+        "tokensConsumed": null,
+        "attempts": []
+      }
     }
   ]
 }
@@ -41,6 +59,10 @@ Expert guidance for converting PRDs to Ralf's executable JSON format.
 3. **Priority**: Based on dependency order (1 = first to implement)
 4. **Initial State**: All `passes: false`, empty `notes`
 5. **Acceptance Criteria**: Always end with "Typecheck passes"
+6. **targetFiles**: Scan codebase to identify likely files to create/modify
+7. **specReference**: Link to functional requirements (e.g., "FR-1, FR-2")
+8. **metrics**: Initialize with null values and empty attempts array
+9. **settings**: Include project-level execution preferences
 
 ## Dependency Ordering
 
@@ -69,6 +91,34 @@ Before overwriting existing prd.json:
 1. Check if existing prd.json has different branchName
 2. If yes, archive to `archive/YYYY-MM-DD-feature-name/`
 3. Include both prd.json and progress.txt
+
+## Strong Linkage (FR-03)
+
+Each story should have clear linkage to:
+
+### targetFiles
+Identify files that will be created or modified:
+- Scan existing codebase structure
+- Consider component/module naming patterns
+- Include test files if TDD is enabled
+
+```json
+"targetFiles": [
+  "src/components/LoginForm.tsx",
+  "src/hooks/useAuth.ts",
+  "src/components/__tests__/LoginForm.test.tsx"
+]
+```
+
+### specReference
+Link to functional requirements from the PRD:
+- Reference FR numbers for traceability
+- Helps verify all requirements are covered
+- Enables requirement-to-implementation mapping
+
+```json
+"specReference": "FR-1, FR-3, NFR-2"
+```
 
 ## Output
 
