@@ -164,20 +164,48 @@ ralf/
 ├── skills/
 │   ├── prd-generation/     # PRD creation guidance
 │   ├── prd-to-json/        # Conversion guidance
-│   └── story-execution/    # Implementation guidance
+│   ├── story-execution/    # Implementation guidance
+│   └── rlm-processing/     # Large context processing guidance
 ├── agents/
 │   ├── story-executor.md   # Focused story implementation
-│   └── code-reviewer.md    # Quality review
+│   ├── code-reviewer.md    # Quality review
+│   └── rlm-processor.md    # Large codebase analysis
 ├── hooks/
 │   ├── hooks.json          # Hook configuration
 │   └── stop-hook.sh        # Loop continuation logic
 ├── scripts/
 │   ├── setup-ralf.sh       # Initialize state
 │   ├── update-prd-status.sh # Update story status
-│   └── check-completion.sh # Check all stories done
+│   ├── check-completion.sh # Check all stories done
+│   └── rlm-repl.sh         # RLM Python REPL environment
 └── templates/
     ├── prd.json.template   # PRD JSON template
-    └── progress-entry.md   # Progress log template
+    ├── progress-entry.md   # Progress log template
+    └── rlm-system-prompt.md # RLM processor prompt template
+```
+
+## RLM Processor
+
+For large codebases (>50K tokens), the story-executor can delegate to the **rlm-processor** agent. Based on the [Recursive Language Models paper](https://arxiv.org/pdf/2512.24601), it treats context as an external environment rather than loading it directly.
+
+### How It Works
+
+1. Files are loaded as a `context` variable in a Python REPL
+2. Code filters and chunks the context (regex, string ops)
+3. `llm_query()` handles semantic analysis on filtered chunks
+4. Results are aggregated and returned as condensed findings
+
+### When It Activates
+
+- Context exceeds 50K tokens
+- Story touches >5 interconnected files
+- Pattern discovery across unfamiliar codebase
+- Cross-cutting concerns (auth, logging, error handling)
+
+### Manual Usage
+
+```bash
+./scripts/rlm-repl.sh "src/**/*.ts" "Find all API endpoints"
 ```
 
 ## Inspiration
