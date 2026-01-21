@@ -14,18 +14,49 @@ Ralf executes user stories iteratively, managing the full development lifecycle 
 
 ## Installation
 
-### Local Installation
+### From Git (Recommended)
 
-Copy to your Claude plugins directory:
+Install directly from GitHub:
+
+```bash
+claude plugin install https://github.com/anis-marrouchi/ralf
+```
+
+### Local Development
+
+Clone and install locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/anis-marrouchi/ralf.git
+cd ralf
+
+# Install as local plugin
+claude plugin install .
+```
+
+Or copy to your Claude plugins directory:
 
 ```bash
 cp -r ralf ~/.claude/plugins/local/
 ```
 
-### From npm (when published)
+### Verify Installation
+
+Check that Ralf is installed:
 
 ```bash
-npm install -g ralf
+claude plugin list
+```
+
+You should see `ralf` in the list of installed plugins.
+
+## Quick Start
+
+Once installed, you can immediately start using Ralf commands:
+
+```bash
+/prd Add user authentication to the app
 ```
 
 ## Commands
