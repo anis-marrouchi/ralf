@@ -86,11 +86,11 @@ Before conversion, validate each story is small enough:
 
 ## Archive Check
 
-Before overwriting existing prd.json:
+Before overwriting existing `.ralf/prd.json`:
 
-1. Check if existing prd.json has different branchName
-2. If yes, archive to `archive/YYYY-MM-DD-feature-name/`
-3. Include both prd.json and progress.txt
+1. Check if existing `.ralf/prd.json` has different branchName
+2. If yes, archive to `.ralf/archive/YYYY-MM-DD-feature-name/`
+3. Include both `.ralf/prd.json` and `.ralf/progress.txt`
 
 ## Strong Linkage (FR-03)
 
@@ -122,4 +122,6 @@ Link to functional requirements from the PRD:
 
 ## Output
 
-Save to project root: `prd.json`
+Save to: `.ralf/prd.json`
+
+Create directory if needed: `mkdir -p .ralf`

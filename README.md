@@ -7,10 +7,12 @@ Ralf executes user stories iteratively, managing the full development lifecycle 
 ## Features
 
 - **PRD Generation**: Create structured Product Requirements Documents
-- **PRD-to-JSON Conversion**: Convert PRDs to executable prd.json format
-- **Autonomous Execution**: Iteratively implement user stories
+- **PRD-to-JSON Conversion**: Convert PRDs to executable format
+- **Autonomous Execution**: Spawn specialized agents to implement stories
+- **Lifecycle Hooks**: Integrate with GitHub/GitLab issue trackers
+- **Metrics Tracking**: Track time and token usage per story
+- **Self-Evaluation**: Adaptive loop optimization with story reordering
 - **Progress Tracking**: Maintain progress logs with learnings
-- **Auto-completion**: Automatically detect when all stories pass
 
 ## Installation
 
@@ -33,10 +35,21 @@ claude
 
 ## Quick Start
 
-Once installed, you can immediately start using Ralf commands:
-
 ```bash
+# 1. Create a PRD
 /prd Add user authentication to the app
+
+# 2. Convert to executable format
+/prd-to-json tasks/prd-user-auth.md
+
+# 3. Initialize hooks (optional)
+/init-hooks
+
+# 4. Start autonomous execution
+/ralf
+
+# 5. Monitor progress
+/ralf-status
 ```
 
 ## Commands
@@ -44,10 +57,12 @@ Once installed, you can immediately start using Ralf commands:
 | Command | Description |
 |---------|-------------|
 | `/prd` | Generate a Product Requirements Document |
-| `/prd-to-json` | Convert PRD markdown to prd.json |
+| `/prd-to-json` | Convert PRD markdown to `.ralf/prd.json` |
 | `/ralf` | Start autonomous execution |
 | `/ralf-status` | Check current progress |
 | `/cancel-ralf` | Stop the active loop |
+| `/init-hooks` | Initialize lifecycle hooks with boilerplate |
+| `/generate-pin` | Generate codebase index for context |
 
 ## Workflow
 
@@ -57,7 +72,7 @@ Once installed, you can immediately start using Ralf commands:
 /prd Add user authentication to the app
 ```
 
-Ralf will ask clarifying questions and generate a structured PRD in `tasks/prd-feature-name.md`.
+Ralf asks clarifying questions and generates a structured PRD in `tasks/prd-feature-name.md`.
 
 ### 2. Convert to prd.json
 
@@ -65,38 +80,62 @@ Ralf will ask clarifying questions and generate a structured PRD in `tasks/prd-f
 /prd-to-json tasks/prd-user-auth.md
 ```
 
-This creates `prd.json` with properly ordered user stories.
+Creates `.ralf/prd.json` with properly ordered user stories.
 
-### 3. Start Execution
+### 3. Initialize Hooks (Optional)
+
+```
+/init-hooks
+```
+
+Creates `.ralf/hooks/` with lifecycle hook boilerplate for GitHub/GitLab integration.
+
+### 4. Start Execution
 
 ```
 /ralf
 ```
 
-Ralf will:
-1. Read prd.json
-2. Pick the highest priority incomplete story
-3. Implement and verify
-4. Commit changes
-5. Update prd.json
-6. Log progress
-7. Repeat until all stories pass
+The orchestrator will:
+1. Read `.ralf/prd.json`
+2. Fire `on_task_start` hook
+3. Spawn `story-executor` agent
+4. Track metrics (time, tokens)
+5. Fire `on_task_completed` or `on_task_blocked` hook
+6. Spawn `evaluator` agent (every N iterations)
+7. Update `.ralf/prd.json` and `.ralf/progress.txt`
+8. Repeat until all stories pass
 
-### 4. Monitor Progress
+### 5. Monitor Progress
 
 ```
 /ralf-status
 ```
 
-Shows current iteration, story completion status, and recent activity.
-
-### 5. Stop if Needed
+### 6. Stop if Needed
 
 ```
 /cancel-ralf
 ```
 
-Stops the loop while preserving progress.
+## .ralf/ Directory Structure
+
+All Ralf artifacts are stored in the `.ralf/` folder:
+
+```
+.ralf/
+├── .gitignore        # Excludes runtime artifacts
+├── prd.json          # PRD with user stories (tracked)
+├── progress.txt      # Progress log (tracked)
+├── config.json       # Project config (tracked, optional)
+├── state.json        # Loop state (gitignored)
+├── metrics.jsonl     # Metrics log (gitignored)
+├── archive/          # Archived previous runs
+└── hooks/
+    ├── on-task-start.sh
+    ├── on-task-completed.sh
+    └── on-task-blocked.sh
+```
 
 ## prd.json Format
 
@@ -105,22 +144,62 @@ Stops the loop while preserving progress.
   "project": "MyApp",
   "branchName": "ralf/feature-name",
   "description": "Feature description",
+  "settings": {
+    "tddRequired": true,
+    "executionMode": "sequential",
+    "evaluatorEnabled": true,
+    "maxRetries": 3
+  },
   "userStories": [
     {
       "id": "US-001",
       "title": "Story title",
       "description": "As a user, I want...",
-      "acceptanceCriteria": [
-        "Criterion 1",
-        "Typecheck passes"
-      ],
+      "acceptanceCriteria": ["Criterion 1", "Typecheck passes"],
       "priority": 1,
       "passes": false,
-      "notes": ""
+      "targetFiles": ["src/auth.ts"],
+      "specReference": "FR-1",
+      "metrics": {
+        "startedAt": null,
+        "completedAt": null,
+        "durationMs": null,
+        "tokensConsumed": null,
+        "attempts": []
+      }
     }
   ]
 }
 ```
+
+## Lifecycle Hooks
+
+Hooks integrate with external issue trackers. Each receives JSON context via stdin.
+
+| Hook | Trigger | Use Case |
+|------|---------|----------|
+| `on_task_start` | Before story execution | Add "in-progress" label |
+| `on_task_completed` | After story passes | Close issue, add summary |
+| `on_task_blocked` | After max retries | Add "blocked" label |
+
+Example hook:
+```bash
+#!/bin/bash
+CONTEXT=$(cat)
+STORY_ID=$(echo "$CONTEXT" | jq -r '.storyId')
+echo "[on_task_start] $STORY_ID"
+
+# GitHub integration
+# gh issue edit "$STORY_ID" --add-label "in-progress"
+```
+
+## Agents
+
+| Agent | Color | Purpose |
+|-------|-------|---------|
+| `story-executor` | 🟢 Green | Implements a single user story |
+| `rlm-processor` | 🟣 Purple | Analyzes large codebases (>50K tokens) |
+| `evaluator` | 🩷 Pink | Evaluates loop performance, reorders stories |
 
 ## Story Sizing Guidelines
 
@@ -132,97 +211,95 @@ Each story should be completable in ONE iteration:
 - Implement one API endpoint
 
 **Bad (too big):**
-- "Build the dashboard" - split into schema, queries, UI, filters
-- "Add authentication" - split into schema, middleware, login, sessions
-
-## Completion Detection
-
-The loop ends when:
-
-1. **Auto-complete**: All stories have `passes: true`
-2. **Explicit**: Claude outputs `<promise>COMPLETE</promise>`
-3. **Max iterations**: If `--max-iterations` is set
-
-## State Files
-
-| File | Purpose |
-|------|---------|
-| `.claude/ralf-state.json` | Loop state (iteration, config) |
-| `prd.json` | User stories and status |
-| `progress.txt` | Progress log and learnings |
+- "Build the dashboard" → split into schema, queries, UI, filters
+- "Add authentication" → split into schema, middleware, login, sessions
 
 ## Options
 
 ```
-/ralf [prd.json] [--max-iterations N] [--completion-promise TEXT]
+/ralf [prd.json] [--max-iterations N] [--mode sequential|parallel]
 ```
 
 - `--max-iterations`: Limit iterations (default: unlimited)
-- `--completion-promise`: Custom completion phrase (default: COMPLETE)
+- `--mode`: Execution mode (default: sequential)
+
+## Project Configuration
+
+Create `.ralf/config.json` for project-specific settings:
+
+```json
+{
+  "settings": {
+    "tddRequired": true,
+    "executionMode": "sequential",
+    "evaluatorEnabled": true,
+    "evaluateEveryNIterations": 3,
+    "maxRetries": 3,
+    "issueTracker": {
+      "platform": "github",
+      "autoUpdate": true
+    }
+  }
+}
+```
 
 ## Architecture
 
 ```
 ralf/
 ├── .claude-plugin/
-│   └── plugin.json         # Plugin manifest
+│   └── plugin.json           # Plugin manifest
 ├── commands/
-│   ├── ralf.md             # Main execution command
-│   ├── prd.md              # PRD generation
-│   ├── prd-to-json.md      # Conversion command
-│   ├── ralf-status.md      # Status check
-│   └── cancel-ralf.md      # Cancel loop
+│   ├── ralf.md               # Orchestrator
+│   ├── prd.md                # PRD generation
+│   ├── prd-to-json.md        # Conversion
+│   ├── ralf-status.md        # Status check
+│   ├── cancel-ralf.md        # Cancel loop
+│   ├── init-hooks.md         # Initialize hooks
+│   └── generate-pin.md       # Codebase index
 ├── skills/
-│   ├── prd-generation/     # PRD creation guidance
-│   ├── prd-to-json/        # Conversion guidance
-│   ├── story-execution/    # Implementation guidance
-│   └── rlm-processing/     # Large context processing guidance
+│   ├── prd-generation/       # PRD quality guidance
+│   ├── prd-to-json/          # Conversion rules
+│   ├── story-execution/      # Implementation flow
+│   ├── rlm-processing/       # Large context patterns
+│   └── update-issue/         # Issue tracker integration
 ├── agents/
-│   ├── story-executor.md   # Focused story implementation
-│   ├── code-reviewer.md    # Quality review
-│   └── rlm-processor.md    # Large codebase analysis
+│   ├── story-executor.md     # Story implementation
+│   ├── rlm-processor.md      # Codebase analysis
+│   └── evaluator.md          # Loop optimization
 ├── hooks/
-│   ├── hooks.json          # Hook configuration
-│   └── stop-hook.sh        # Loop continuation logic
+│   └── lifecycle-hooks.json  # Hook configuration
 ├── scripts/
-│   ├── setup-ralf.sh       # Initialize state
-│   ├── update-prd-status.sh # Update story status
-│   ├── check-completion.sh # Check all stories done
-│   └── rlm-repl.sh         # RLM Python REPL environment
+│   ├── setup-ralf.sh         # Initialize state
+│   └── ...
 └── templates/
-    ├── prd.json.template   # PRD JSON template
-    ├── progress-entry.md   # Progress log template
-    └── rlm-system-prompt.md # RLM processor prompt template
+    ├── hook-on-task-start.sh
+    ├── hook-on-task-completed.sh
+    ├── hook-on-task-blocked.sh
+    └── ralf-config.json
 ```
 
 ## RLM Processor
 
-For large codebases (>50K tokens), the story-executor can delegate to the **rlm-processor** agent. Based on the [Recursive Language Models paper](https://arxiv.org/pdf/2512.24601), it treats context as an external environment rather than loading it directly.
+For large codebases (>50K tokens), the story-executor delegates to the **rlm-processor** agent. Based on [Recursive Language Models](https://arxiv.org/pdf/2512.24601), it treats context as an external environment.
 
 ### How It Works
 
-1. Files are loaded as a `context` variable in a Python REPL
-2. Code filters and chunks the context (regex, string ops)
+1. Files loaded as `context` variable in Python REPL
+2. Code filters and chunks context (regex, string ops)
 3. `llm_query()` handles semantic analysis on filtered chunks
-4. Results are aggregated and returned as condensed findings
+4. Results aggregated and returned as condensed findings
 
-### When It Activates
+### Trigger Conditions
 
 - Context exceeds 50K tokens
 - Story touches >5 interconnected files
-- Pattern discovery across unfamiliar codebase
-- Cross-cutting concerns (auth, logging, error handling)
-
-### Manual Usage
-
-```bash
-./scripts/rlm-repl.sh "src/**/*.ts" "Find all API endpoints"
-```
+- Pattern discovery in unfamiliar codebase
+- Cross-cutting concerns (auth, logging, errors)
 
 ## Inspiration
 
-Ralf is inspired by:
-- [Recursive Language Models (RLMs)](https://arxiv.org/pdf/2512.24601) - Framework for recursive task decomposition
+- [Recursive Language Models (RLMs)](https://arxiv.org/pdf/2512.24601)
 - Geoffrey Huntley's autonomous agent loop patterns
 
 ## Contributing

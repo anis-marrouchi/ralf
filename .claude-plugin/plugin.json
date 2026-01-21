@@ -13,7 +13,8 @@
     "./commands/prd.md",
     "./commands/ralf-status.md",
     "./commands/ralf.md",
-    "./commands/generate-pin.md"
+    "./commands/generate-pin.md",
+    "./commands/init-hooks.md"
   ],
   "skills": [
     "./skills/prd-generation",

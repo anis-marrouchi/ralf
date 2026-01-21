@@ -9,7 +9,7 @@ Stop any active Ralf loop by removing the state file.
 
 ## Steps
 
-1. Check if `.claude/ralf-state.json` exists
+1. Check if `.ralf/state.json` exists
 2. If it exists:
    - Show current iteration and status
    - Remove the state file
@@ -20,12 +20,12 @@ Stop any active Ralf loop by removing the state file.
 ## Execute
 
 ```bash
-if [ -f ".claude/ralf-state.json" ]; then
+if [ -f ".ralf/state.json" ]; then
   echo "Current Ralf state:"
-  cat .claude/ralf-state.json | jq '.'
-  rm .claude/ralf-state.json
+  cat .ralf/state.json | jq '.'
+  rm .ralf/state.json
   echo ""
-  echo "Ralf loop cancelled. The prd.json and progress.txt files are preserved."
+  echo "Ralf loop cancelled. The .ralf/prd.json and .ralf/progress.txt files are preserved."
   echo "Run /ralf to start a new loop."
 else
   echo "No active Ralf loop found."

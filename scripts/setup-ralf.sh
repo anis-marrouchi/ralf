@@ -6,9 +6,10 @@
 set -euo pipefail
 
 # Default values
-PRD_PATH="prd.json"
+PRD_PATH=".ralf/prd.json"
 MAX_ITERATIONS=0
 COMPLETION_PROMISE="COMPLETE"
+EXECUTION_MODE="sequential"
 
 # Help message
 show_help() {
@@ -19,20 +20,29 @@ USAGE:
   /ralf [PRD_PATH] [OPTIONS]
 
 ARGUMENTS:
-  PRD_PATH    Path to prd.json file (default: prd.json)
+  PRD_PATH    Path to prd.json file (default: .ralf/prd.json)
 
 OPTIONS:
   --max-iterations <n>           Maximum iterations before auto-stop (default: unlimited)
+  --mode <mode>                  Execution mode: sequential|parallel|full-parallel (default: sequential)
   --completion-promise '<text>'  Custom completion phrase (default: COMPLETE)
   -h, --help                     Show this help message
 
 DESCRIPTION:
   Starts Ralf autonomous execution. Ralf will:
-  1. Read the prd.json file
+  1. Read the .ralf/prd.json file
   2. Pick the highest priority story with passes: false
-  3. Implement the story
-  4. Update prd.json and progress.txt
+  3. Spawn story-executor agent to implement the story
+  4. Update .ralf/prd.json and .ralf/progress.txt
   5. Loop until all stories pass or max iterations reached
+
+ARTIFACTS:
+  All Ralf artifacts are stored in .ralf/:
+  - .ralf/prd.json       # PRD with user stories
+  - .ralf/progress.txt   # Progress log and patterns
+  - .ralf/state.json     # Loop state (gitignored)
+  - .ralf/config.json    # Project configuration
+  - .ralf/hooks/         # Lifecycle hooks
 
 COMPLETION:
   The loop ends when:
@@ -41,10 +51,10 @@ COMPLETION:
   - Max iterations reached (if set)
 
 EXAMPLES:
-  /ralf                                    # Use default prd.json
-  /ralf tasks/feature-prd.json             # Custom PRD path
+  /ralf                                    # Use default .ralf/prd.json
+  /ralf .ralf/prd.json                     # Explicit path
   /ralf --max-iterations 20                # Limit iterations
-  /ralf prd.json --max-iterations 50       # Custom path + limit
+  /ralf --mode parallel                    # Parallel execution
 
 MONITORING:
   /ralf-status    Show current progress
@@ -52,9 +62,10 @@ MONITORING:
 
 WORKFLOW:
   1. /prd                  # Create a PRD
-  2. /prd-to-json          # Convert to prd.json
-  3. /ralf                # Start execution
-  4. /ralf-status         # Check progress
+  2. /prd-to-json          # Convert to .ralf/prd.json
+  3. /init-hooks           # Setup lifecycle hooks (optional)
+  4. /ralf                 # Start execution
+  5. /ralf-status          # Check progress
 HELP_EOF
   exit 0
 }
@@ -72,6 +83,14 @@ while [[ $# -gt 0 ]]; do
         exit 1
       fi
       MAX_ITERATIONS="$2"
+      shift 2
+      ;;
+    --mode)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --mode requires an argument (sequential|parallel|full-parallel)" >&2
+        exit 1
+      fi
+      EXECUTION_MODE="$2"
       shift 2
       ;;
     --completion-promise)
@@ -99,13 +118,16 @@ if [[ ${#POSITIONAL_ARGS[@]} -gt 0 ]]; then
   PRD_PATH="${POSITIONAL_ARGS[0]}"
 fi
 
+# Create .ralf directory if it doesn't exist
+mkdir -p .ralf
+
 # Validate PRD file exists
 if [[ ! -f "$PRD_PATH" ]]; then
   echo "Error: PRD file not found: $PRD_PATH" >&2
   echo "" >&2
   echo "Create a prd.json first:" >&2
   echo "  1. /prd           # Generate a PRD" >&2
-  echo "  2. /prd-to-json   # Convert to prd.json" >&2
+  echo "  2. /prd-to-json   # Convert to .ralf/prd.json" >&2
   echo "" >&2
   echo "Or specify a different path:" >&2
   echo "  /ralf path/to/prd.json" >&2
@@ -119,7 +141,7 @@ if ! jq empty "$PRD_PATH" 2>/dev/null; then
 fi
 
 # Check for existing loop
-if [[ -f ".claude/ralf-state.json" ]]; then
+if [[ -f ".ralf/state.json" ]]; then
   echo "Warning: Ralf loop already active!" >&2
   echo "Run /cancel-ralf first to stop the existing loop" >&2
   exit 1
@@ -133,18 +155,24 @@ TOTAL_STORIES=$(jq '.userStories | length' "$PRD_PATH")
 PASSING_STORIES=$(jq '[.userStories[] | select(.passes == true)] | length' "$PRD_PATH")
 FAILING_STORIES=$((TOTAL_STORIES - PASSING_STORIES))
 
-# Build the prompt for the loop
-PROMPT="You are Ralf, an autonomous coding agent. Execute the next incomplete story from $PRD_PATH following the Ralf workflow: read PRD, check branch, implement story, verify, commit, update status, log progress. Work on ONE story per iteration."
+# Read settings from prd.json or config.json
+if [[ -f ".ralf/config.json" ]]; then
+  CONFIG_MODE=$(jq -r '.settings.executionMode // "sequential"' ".ralf/config.json")
+  if [[ "$EXECUTION_MODE" == "sequential" ]]; then
+    EXECUTION_MODE="$CONFIG_MODE"
+  fi
+fi
 
-# Create state directory
-mkdir -p .claude
+# Build the prompt for the loop
+PROMPT="You are Ralf, an autonomous coding agent orchestrator. Execute the next incomplete story from $PRD_PATH by SPAWNING the story-executor agent. Follow the Ralf workflow: read PRD, check branch, spawn agent, track metrics, update status, fire hooks. Work on ONE story per iteration."
 
 # Create state file (JSON format)
-cat > .claude/ralf-state.json << EOF
+cat > .ralf/state.json << EOF
 {
   "active": true,
   "iteration": 1,
   "maxIterations": $MAX_ITERATIONS,
+  "executionMode": "$EXECUTION_MODE",
   "completionPromise": "$COMPLETION_PROMISE",
   "prdPath": "$PRD_PATH",
   "project": "$PROJECT",
@@ -153,6 +181,22 @@ cat > .claude/ralf-state.json << EOF
   "prompt": $(echo "$PROMPT" | jq -Rs .)
 }
 EOF
+
+# Create .gitignore if it doesn't exist
+if [[ ! -f ".ralf/.gitignore" ]]; then
+  cat > .ralf/.gitignore << 'GITIGNORE_EOF'
+# Ralf runtime artifacts (should not be committed)
+state.json
+metrics.jsonl
+
+# Keep these tracked:
+# prd.json
+# progress.txt
+# config.json
+# hooks/
+GITIGNORE_EOF
+  echo "Created .ralf/.gitignore"
+fi
 
 # Output setup message
 cat << EOF
@@ -167,13 +211,15 @@ Stories: $PASSING_STORIES/$TOTAL_STORIES passing ($FAILING_STORIES remaining)
 
 Iteration: 1
 Max iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo $MAX_ITERATIONS; else echo "unlimited"; fi)
+Mode: $EXECUTION_MODE
 Completion: Auto (all stories pass) OR <promise>$COMPLETION_PROMISE</promise>
 
 The stop hook is now active. Each iteration will:
 1. Pick the next incomplete story
-2. Implement and verify
-3. Update prd.json and progress.txt
-4. Continue until complete
+2. Spawn story-executor agent
+3. Track metrics and update .ralf/prd.json
+4. Fire lifecycle hooks
+5. Continue until complete
 
 Commands:
   /ralf-status  - Check progress
@@ -183,8 +229,8 @@ Starting execution...
 EOF
 
 # Create or update progress.txt if it doesn't exist
-if [[ ! -f "progress.txt" ]]; then
-  cat > progress.txt << EOF
+if [[ ! -f ".ralf/progress.txt" ]]; then
+  cat > .ralf/progress.txt << EOF
 # Ralf Progress Log
 
 ## Codebase Patterns
@@ -194,7 +240,7 @@ if [[ ! -f "progress.txt" ]]; then
 
 EOF
   echo ""
-  echo "Created progress.txt for tracking"
+  echo "Created .ralf/progress.txt for tracking"
 fi
 
 echo ""

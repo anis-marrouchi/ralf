@@ -16,8 +16,8 @@ Expert guidance for implementing a single user story in one Ralf iteration.
 ## Execution Flow
 
 ### 1. Pre-Implementation
-- Read prd.json to get story details
-- Read progress.txt for codebase patterns
+- Read `.ralf/prd.json` to get story details
+- Read `.ralf/progress.txt` for codebase patterns
 - Check you're on the correct branch
 - Identify the target story (first with `passes: false`)
 
@@ -35,8 +35,8 @@ Expert guidance for implementing a single user story in one Ralf iteration.
 
 ### 4. Post-Implementation
 - Commit with message: `feat: [US-XXX] - [Story Title]`
-- Update prd.json: set `passes: true`
-- Append to progress.txt with learnings
+- Update `.ralf/prd.json`: set `passes: true`
+- Append to `.ralf/progress.txt` with learnings
 - Update AGENTS.md if reusable patterns found
 
 ## Quality Gates
@@ -47,14 +47,14 @@ A story is only complete when:
 - [ ] Typecheck passes
 - [ ] No linting errors
 - [ ] Changes committed
-- [ ] prd.json updated
-- [ ] Progress logged
+- [ ] `.ralf/prd.json` updated
+- [ ] `.ralf/progress.txt` logged
 
 ## Common Mistakes to Avoid
 
 1. **Scope Creep**: Implementing more than the acceptance criteria
 2. **Skipping Verification**: Not running typecheck/tests
-3. **Forgetting Progress**: Not updating progress.txt
+3. **Forgetting Progress**: Not updating `.ralf/progress.txt`
 4. **Breaking Changes**: Changing code outside story scope
 5. **Missing Commits**: Forgetting to commit before loop ends
 

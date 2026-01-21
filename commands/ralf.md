@@ -1,6 +1,6 @@
 ---
-description: "Start Ralf autonomous execution on a prd.json file"
-argument-hint: "[prd.json path] [--max-iterations N] [--mode sequential|parallel|full-parallel]"
+description: "Start Ralf autonomous execution on a .ralf/prd.json file"
+argument-hint: "[.ralf/prd.json path] [--max-iterations N] [--mode sequential|parallel|full-parallel]"
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-ralf.sh:*)", "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/check-completion.sh:*)", "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/update-prd-status.sh:*)", "Task(ralf:story-executor)", "Task(ralf:evaluator)"]
 ---
 
@@ -34,8 +34,8 @@ You are an **orchestrator**, not an implementer. Follow this workflow:
 ### 1. Load Configuration
 
 Read and merge configuration from (in priority order):
-1. `.ralf/config.json` (project root) - if exists
-2. `prd.json` settings section
+1. `.ralf/config.json` - if exists
+2. `.ralf/.ralf/prd.json` settings section
 3. Plugin defaults
 
 Default settings:
@@ -53,7 +53,7 @@ Default settings:
 
 ### 2. Find Next Story
 
-1. Read prd.json
+1. Read `.ralf/.ralf/prd.json`
 2. Find the highest priority story where `passes: false` AND not blocked
 3. If no stories remain, check completion
 
@@ -94,7 +94,7 @@ Task tool parameters:
     - [CRITERION_2]
 
     Branch: [BRANCH_NAME]
-    prd.json path: [PRD_PATH]
+    .ralf/prd.json path: [PRD_PATH]
     Iteration: [ITERATION_NUMBER]
     Start timestamp: [START_TIMESTAMP]
 
@@ -116,7 +116,7 @@ tokensConsumed = from executor report
 ### 7. Process Result
 
 **IF SUCCESS:**
-1. Update story in prd.json: `passes: true`
+1. Update story in .ralf/prd.json: `passes: true`
 2. Update story metrics:
    ```json
    {
@@ -136,7 +136,7 @@ tokensConsumed = from executor report
    ```bash
    echo '{"storyId":"US-001","metrics":{...},"commitHash":"abc123"}' | .ralf/hooks/on-task-completed.sh
    ```
-4. Append to progress.txt
+4. Append to .ralf/progress.txt
 
 **IF FAILURE:**
 1. Increment retry count for story
@@ -160,8 +160,8 @@ Task tool parameters:
 - prompt: |
     Evaluate the Ralf loop performance.
 
-    prd.json path: [PRD_PATH]
-    progress.txt path: progress.txt
+    .ralf/prd.json path: [PRD_PATH]
+    .ralf/progress.txt path: .ralf/progress.txt
     Last N iterations metrics: [METRICS_SUMMARY]
 
     Assess:
@@ -184,7 +184,7 @@ Check completion status:
 
 ## Progress Report Format
 
-APPEND to progress.txt (never replace):
+APPEND to .ralf/progress.txt (never replace):
 
 ```
 ## [Date/Time] - [Story ID]
@@ -200,7 +200,7 @@ APPEND to progress.txt (never replace):
 
 ## Codebase Patterns
 
-If story-executor discovers **reusable patterns**, add to `## Codebase Patterns` section at TOP of progress.txt.
+If story-executor discovers **reusable patterns**, add to `## Codebase Patterns` section at TOP of .ralf/progress.txt.
 
 ## Execution Modes
 
@@ -216,7 +216,7 @@ Based on `--mode` argument:
 2. **SPAWN AGENTS** - Use Task tool with `ralf:story-executor`
 3. **TRACK METRICS** - Record timestamps and token usage
 4. **FIRE HOOKS** - Execute lifecycle hooks when present
-5. **UPDATE STATE** - Keep prd.json and progress.txt current
+5. **UPDATE STATE** - Keep .ralf/prd.json and .ralf/progress.txt current
 6. **RESPECT CONFIG** - Honor project-level settings
 
 ## Verification Checklist
@@ -230,9 +230,9 @@ Before each iteration:
 After story-executor returns:
 - [ ] Completion timestamp recorded
 - [ ] Metrics calculated and stored
-- [ ] prd.json updated with result
+- [ ] .ralf/prd.json updated with result
 - [ ] Appropriate hook fired (completed/blocked)
-- [ ] progress.txt updated
+- [ ] .ralf/progress.txt updated
 - [ ] Evaluator spawned (if due)
 
 ## Stop Condition

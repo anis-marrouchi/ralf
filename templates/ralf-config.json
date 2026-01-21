@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/ralf-config.schema.json",
+  "$comment": "Place this file at .ralf/config.json in your project",
   "settings": {
     "tddRequired": true,
     "autoPush": true,
@@ -9,9 +9,9 @@
     "evaluateEveryNIterations": 3,
     "maxRetries": 3,
     "hooks": {
-      "on_task_start": ".ralf/hooks/on-task-start.sh",
-      "on_task_completed": ".ralf/hooks/on-task-completed.sh",
-      "on_task_blocked": ".ralf/hooks/on-task-blocked.sh"
+      "on_task_start": "hooks/on-task-start.sh",
+      "on_task_completed": "hooks/on-task-completed.sh",
+      "on_task_blocked": "hooks/on-task-blocked.sh"
     },
     "issueTracker": {
       "platform": "github",

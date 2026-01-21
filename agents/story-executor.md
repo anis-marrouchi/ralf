@@ -30,8 +30,8 @@ Implement the specified story completely, following ALL acceptance criteria exac
 
 ### 1. Setup
 ```
-- Read prd.json to get story details
-- Read progress.txt for existing patterns (especially Codebase Patterns section)
+- Read .ralf/prd.json to get story details
+- Read .ralf/progress.txt for existing patterns (especially Codebase Patterns section)
 - Ensure you're on the correct branch
 - Review any relevant AGENTS.md files
 ```
@@ -90,8 +90,8 @@ Return a JSON report with execution metrics:
 ## Constraints
 
 - Do NOT implement more than the specified story
-- Do NOT modify prd.json (the parent process handles that)
-- Do NOT update progress.txt (the parent process handles that)
+- Do NOT modify .ralf/prd.json (the parent process handles that)
+- Do NOT update .ralf/progress.txt (the parent process handles that)
 - STOP immediately if verification fails - report the failure
 
 ## Quality Standards

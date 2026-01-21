@@ -8,17 +8,17 @@ Display the current status of Ralf execution.
 
 ## Check These Items
 
-1. **Ralf Loop State** - Check if `.claude/ralf-state.json` exists
+1. **Ralf Loop State** - Check if `.ralf/state.json` exists
    - If exists: Show iteration count, max iterations, completion promise
    - If not: "No active Ralf loop"
 
-2. **PRD Status** - Read `prd.json` if it exists
+2. **PRD Status** - Read `.ralf/prd.json` if it exists
    - Show project name and branch
    - List all user stories with their pass/fail status
    - Calculate completion percentage
    - Highlight the next story to work on (first with `passes: false`)
 
-3. **Progress Log** - Check `progress.txt` if it exists
+3. **Progress Log** - Check `.ralf/progress.txt` if it exists
    - Show the Codebase Patterns section if present
    - Show the last 2-3 entries
 
@@ -45,10 +45,10 @@ Branch: [branchName]
 Progress: 1/3 stories (33%)
 
 ### Recent Activity
-[Last 2-3 entries from progress.txt]
+[Last 2-3 entries from .ralf/progress.txt]
 
 ### Codebase Patterns
-[Patterns section from progress.txt if present]
+[Patterns section from .ralf/progress.txt if present]
 ```
 
 ## Commands Available

@@ -128,21 +128,26 @@ Stories execute in priority order. Earlier stories must not depend on later ones
 
 **Before writing a new prd.json, check if there is an existing one from a different feature:**
 
-1. Read the current `prd.json` if it exists
+1. Read the current `.ralf/prd.json` if it exists
 2. Check if `branchName` differs from the new feature's branch name
-3. If different AND `progress.txt` has content beyond the header:
-   - Create archive folder: `archive/YYYY-MM-DD-feature-name/`
-   - Copy current `prd.json` and `progress.txt` to archive
-   - Reset `progress.txt` with fresh header
+3. If different AND `.ralf/progress.txt` has content beyond the header:
+   - Create archive folder: `.ralf/archive/YYYY-MM-DD-feature-name/`
+   - Copy current `.ralf/prd.json` and `.ralf/progress.txt` to archive
+   - Reset `.ralf/progress.txt` with fresh header
 
 ## Output Location
 
-Save to: `prd.json` (root of project)
+Save to: `.ralf/prd.json`
+
+Create the `.ralf/` directory if it doesn't exist:
+```bash
+mkdir -p .ralf
+```
 
 ## After Conversion
 
 After saving prd.json, inform the user:
-"prd.json created with [N] user stories. Run `/ralf` to start autonomous execution."
+".ralf/prd.json created with [N] user stories. Run `/ralf` to start autonomous execution."
 
 ## Checklist Before Saving
 
